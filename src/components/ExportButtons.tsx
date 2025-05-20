@@ -3,7 +3,7 @@
 import React from 'react';
 import { saveAs } from 'file-saver';
 
-const SYSTEM_URL = 'https://pcawbfiyohfa.sealoshzh.site';
+const SYSTEM_URL = 'https://jiuhou-resume.netlify.app/';
 
 const ExportButtons = () => {
   // 生成文件名的函数
