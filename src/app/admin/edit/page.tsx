@@ -66,7 +66,8 @@ const defaultResumeData: ResumeData = {
     '熟练掌握Java基础（集合、多线程、JVM内存模型），精通Spring全家桶（Spring/Spring MVC/SpringBoot）、Mybatis等主流框架。',
     '熟练使用MySQL、PostgreSQL，具备SQL优化经验；熟悉Redis缓存架构及应用。',
     '熟悉Linux系统及常用命令，能独立完成日志排查、shell脚本编写、自动化部署（Docker/Nginx）。',
-    '了解Dubbo、Spring Cloud微服务架构、Kafka。'
+    '了解Dubbo、Spring Cloud微服务架构、Kafka。',
+    '熟练使用Java+AI的模式进行开发，大大提升开发效率'
   ],
   experience: [
     {
@@ -75,6 +76,13 @@ const defaultResumeData: ResumeData = {
       startDate: '2021.07',
       endDate: '2024.05',
       description: `主要需求评审与模块设计，遵循编码规范完成核心功能开发，实现Web及DBN包部署脚本优化，提升部署效率30%。\n负责系统全生命周期管理，从开发自测到版本提测、问题闭环，保障全国100+局点生产环境稳定性，线上问题响应实效<15分钟。\n编写自动化运维脚本，支持多地市环境快速部署，降低人工干预成本约40%。`,
+    },
+    {
+      company: '南京绿和信息技术有限公司',
+      position: '',
+      startDate: '2024.10',
+      endDate: '至今',
+      description: `1.参与某军工项目的设计与研发\n2.负责项目模块中数据中台模块的设计与开发\n3.负责项目的部署以及运维工作`,
     },
   ],
   education: [
@@ -485,7 +493,7 @@ export default function EditPage() {
           {/* 个人优势 */}
           <section>
             <h2 className="text-xl font-semibold mb-4">个人优势</h2>
-            {resumeData.advantages.map((adv, idx) => (
+            {Array.isArray(resumeData.advantages) && resumeData.advantages.map((adv, idx) => (
               <div key={idx} className="flex items-center mb-2">
                 <input
                   type="text"
