@@ -13,19 +13,20 @@ import ExportButtons from '@/components/ExportButtons';
 
 interface ResumeData {
   header: {
-  name: string;
-  gender: string;
-  age: string;
-  nativePlace: string;
-  phone: string;
-  email: string;
-  location: string;
-  experience: string;
-  jobIntention: string;
-  salary: string;
-  avatar?: string;
-};
+    name: string;
+    gender: string;
+    age: string;
+    nativePlace: string;
+    phone: string;
+    email: string;
+    location: string;
+    experience: string;
+    jobIntention: string;
+    salary: string;
+    avatar?: string;
+  };
   about: string;
+  advantages: string[];
   experience: Array<{
     company: string;
     position: string;
@@ -64,10 +65,16 @@ const defaultResumeData: ResumeData = {
     location: '盐城',
     experience: '4年工作经验',
     jobIntention: 'Java',
-    salary: '11-14K',
+    salary: '15-20K',
     avatar: '',
-    },
+  },
   about: '',
+  advantages: [
+    '熟练掌握Java基础（集合、多线程、JVM内存模型），精通Spring全家桶（Spring/Spring MVC/SpringBoot）、Mybatis等主流框架。',
+    '熟练使用MySQL、PostgreSQL，具备SQL优化经验；熟悉Redis缓存架构及应用。',
+    '熟悉Linux系统及常用命令，能独立完成日志排查、shell脚本编写、自动化部署（Docker/Nginx）。',
+    '了解Dubbo、Spring Cloud微服务架构、Kafka。'
+  ],
   experience: [
     {
       company: '南京烽火星空通信发展有限公司',
@@ -187,7 +194,7 @@ export default function Home() {
             avatar={resumeData.header.avatar}
             />
           <div className="space-y-6">
-            <About />
+            <About advantages={resumeData.advantages} />
             <Experience items={resumeData.experience} />
             <Education items={resumeData.education} />
             <Projects items={resumeData.projects} />

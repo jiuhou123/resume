@@ -17,8 +17,9 @@ interface ResumeData {
     jobIntention: string;
     salary: string;
     avatar?: string;
-    };
+  };
   about: string;
+  advantages: string[];
   experience: Array<{
     company: string;
     position: string;
@@ -57,10 +58,16 @@ const defaultResumeData: ResumeData = {
     location: '盐城',
     experience: '4年工作经验',
     jobIntention: 'Java',
-    salary: '11-14K',
+    salary: '15-20K',
     avatar: '',
     },
   about: '',
+  advantages: [
+    '熟练掌握Java基础（集合、多线程、JVM内存模型），精通Spring全家桶（Spring/Spring MVC/SpringBoot）、Mybatis等主流框架。',
+    '熟练使用MySQL、PostgreSQL，具备SQL优化经验；熟悉Redis缓存架构及应用。',
+    '熟悉Linux系统及常用命令，能独立完成日志排查、shell脚本编写、自动化部署（Docker/Nginx）。',
+    '了解Dubbo、Spring Cloud微服务架构、Kafka。'
+  ],
   experience: [
     {
       company: '南京烽火星空通信发展有限公司',
@@ -473,6 +480,38 @@ export default function EditPage() {
                 </p>
               </div>
             </div>
+          </section>
+
+          {/* 个人优势 */}
+          <section>
+            <h2 className="text-xl font-semibold mb-4">个人优势</h2>
+            {resumeData.advantages.map((adv, idx) => (
+              <div key={idx} className="flex items-center mb-2">
+                <input
+                  type="text"
+                  value={adv}
+                  onChange={e => {
+                    const newAdvs = [...resumeData.advantages];
+                    newAdvs[idx] = e.target.value;
+                    setResumeData({ ...resumeData, advantages: newAdvs });
+                  }}
+                  className="w-full px-3 py-2 border rounded-md"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newAdvs = resumeData.advantages.filter((_, i) => i !== idx);
+                    setResumeData({ ...resumeData, advantages: newAdvs });
+                  }}
+                  className="ml-2 text-red-500 hover:text-red-600"
+                >删除</button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => setResumeData({ ...resumeData, advantages: [...resumeData.advantages, ''] })}
+              className="text-blue-500 hover:text-blue-600 mt-2"
+            >添加优势</button>
           </section>
 
           {/* 工作经验 */}
