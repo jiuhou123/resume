@@ -5,19 +5,10 @@ import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 
 interface ResumeData {
-  header: {
-    name: string;
-    gender: string;
-    age: string;
-    nativePlace: string;
-    phone: string;
-    email: string;
-    location: string;
-    experience: string;
-    jobIntention: string;
-    salary: string;
-    avatar?: string;
-  };
+  header: Array<{
+    label: string;
+    value: string;
+  }>;
   about: string;
   advantages: string[];
   experience: Array<{
@@ -48,19 +39,18 @@ interface ResumeData {
 }
 
 const defaultResumeData: ResumeData = {
-    header: {
-    name: '李鑫华',
-    gender: '男',
-    age: '26岁',
-    nativePlace: '盐城',
-    phone: '17312308221',
-    email: '1750209521@qq.com',
-    location: '盐城',
-    experience: '4年工作经验',
-    jobIntention: 'Java',
-    salary: '15-20K',
-    avatar: '',
-    },
+  header: [
+    { label: '姓名', value: '李鑫华' },
+    { label: '性别', value: '男' },
+    { label: '年龄', value: '26岁' },
+    { label: '籍贯', value: '盐城' },
+    { label: '电话', value: '17312308221' },
+    { label: '邮箱', value: '1750209521@qq.com' },
+    { label: '地址', value: '盐城' },
+    { label: '工作经验', value: '4年工作经验' },
+    { label: '求职意向', value: 'Java' },
+    { label: '期望薪资', value: '15-20K' },
+  ],
   about: '',
   advantages: [
     '熟练掌握Java基础（集合、多线程、JVM内存模型），精通Spring全家桶（Spring/Spring MVC/SpringBoot）、Mybatis等主流框架。',
@@ -175,7 +165,23 @@ export default function EditPage() {
     // 尝试从localStorage加载保存的数据
     const savedData = localStorage.getItem('resumeData');
     if (savedData) {
-      setResumeData(JSON.parse(savedData));
+      const parsed = JSON.parse(savedData);
+      // 兼容旧格式：如果 header 不是数组，转换为数组格式
+      if (!Array.isArray(parsed.header)) {
+        parsed.header = [
+          { label: '姓名', value: parsed.header.name || '' },
+          { label: '性别', value: parsed.header.gender || '' },
+          { label: '年龄', value: parsed.header.age || '' },
+          { label: '籍贯', value: parsed.header.nativePlace || '' },
+          { label: '电话', value: parsed.header.phone || '' },
+          { label: '邮箱', value: parsed.header.email || '' },
+          { label: '地址', value: parsed.header.location || '' },
+          { label: '工作经验', value: parsed.header.experience || '' },
+          { label: '求职意向', value: parsed.header.jobIntention || '' },
+          { label: '期望薪资', value: parsed.header.salary || '' },
+        ];
+      }
+      setResumeData(parsed);
     }
   }, [router]);
 
@@ -199,10 +205,14 @@ export default function EditPage() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setResumeData({
-          ...resumeData,
-          header: { ...resumeData.header, avatar: reader.result as string },
-        });
+        let newHeader = [...resumeData.header];
+        const idx = newHeader.findIndex(item => item.label === '头像' || item.label.toLowerCase() === 'avatar');
+        if (idx !== -1) {
+          newHeader[idx].value = reader.result as string;
+        } else {
+          newHeader.push({ label: '头像', value: reader.result as string });
+        }
+        setResumeData({ ...resumeData, header: newHeader });
       };
       reader.readAsDataURL(file);
     }
@@ -211,7 +221,9 @@ export default function EditPage() {
   const handleDeleteAvatar = () => {
     setResumeData({
       ...resumeData,
-      header: { ...resumeData.header, avatar: '' },
+      header: resumeData.header.map(item =>
+        item.label === '头像' ? { ...item, value: '' } : item
+      ),
     });
   };
 
@@ -260,167 +272,115 @@ export default function EditPage() {
               <div className="flex-1">
                 <h2 className="text-xl font-semibold mb-4">基本信息</h2>
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">姓名</label>
-                    <input
-                      type="text"
-                      value={resumeData.header.name}
-                      onChange={(e) =>
-                        setResumeData({
-                          ...resumeData,
-                          header: { ...resumeData.header, name: e.target.value },
-                        })
-                      }
-                      className="w-full px-3 py-2 border rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">性别</label>
-                    <input
-                      type="text"
-                      value={resumeData.header.gender}
-                      onChange={(e) =>
-                        setResumeData({
-                          ...resumeData,
-                          header: { ...resumeData.header, gender: e.target.value },
-                        })
-                      }
-                      className="w-full px-3 py-2 border rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">年龄</label>
-                    <input
-                      type="text"
-                      value={resumeData.header.age}
-                      onChange={(e) =>
-                        setResumeData({
-                          ...resumeData,
-                          header: { ...resumeData.header, age: e.target.value },
-                        })
-                      }
-                      className="w-full px-3 py-2 border rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">籍贯</label>
-                    <input
-                      type="text"
-                      value={resumeData.header.nativePlace}
-                      onChange={(e) =>
-                        setResumeData({
-                          ...resumeData,
-                          header: { ...resumeData.header, nativePlace: e.target.value },
-                        })
-                      }
-                      className="w-full px-3 py-2 border rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">工作经验</label>
-                    <input
-                      type="text"
-                      value={resumeData.header.experience}
-                      onChange={(e) =>
-                        setResumeData({
-                          ...resumeData,
-                          header: { ...resumeData.header, experience: e.target.value },
-                        })
-                      }
-                      className="w-full px-3 py-2 border rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">求职意向</label>
-                    <input
-                      type="text"
-                      value={resumeData.header.jobIntention}
-                      onChange={(e) =>
-                        setResumeData({
-                          ...resumeData,
-                          header: { ...resumeData.header, jobIntention: e.target.value },
-                        })
-                      }
-                      className="w-full px-3 py-2 border rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">期望薪资</label>
-                    <input
-                      type="text"
-                      value={resumeData.header.salary}
-                      onChange={(e) =>
-                        setResumeData({
-                          ...resumeData,
-                          header: { ...resumeData.header, salary: e.target.value },
-                        })
-                      }
-                      className="w-full px-3 py-2 border rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
-                    <input
-                      type="email"
-                      value={resumeData.header.email}
-                      onChange={(e) =>
-                        setResumeData({
-                          ...resumeData,
-                          header: { ...resumeData.header, email: e.target.value },
-                        })
-                      }
-                      className="w-full px-3 py-2 border rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">电话</label>
-                    <input
-                      type="text"
-                      value={resumeData.header.phone}
-                      onChange={(e) =>
-                        setResumeData({
-                          ...resumeData,
-                          header: { ...resumeData.header, phone: e.target.value },
-                        })
-                      }
-                      className="w-full px-3 py-2 border rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">地址</label>
-                    <input
-                      type="text"
-                      value={resumeData.header.location}
-                      onChange={(e) =>
-                        setResumeData({
-                          ...resumeData,
-                          header: { ...resumeData.header, location: e.target.value },
-                        })
-                      }
-                      className="w-full px-3 py-2 border rounded-md"
-                    />
-                  </div>
+                  {Array.isArray(resumeData.header) && resumeData.header.map((item, index) => (
+                    <div key={index} className="flex items-center">
+                      <div className="flex-1 flex gap-2">
+                        <input
+                          type="text"
+                          value={item.label}
+                          onChange={e => {
+                            const newHeader = [...resumeData.header];
+                            newHeader[index].label = e.target.value;
+                            setResumeData({ ...resumeData, header: newHeader });
+                          }}
+                          className="w-28 px-3 py-2 border rounded-md mr-2"
+                          placeholder="信息名"
+                        />
+                        <input
+                          type="text"
+                          value={item.value}
+                          onChange={e => {
+                            const newHeader = [...resumeData.header];
+                            newHeader[index].value = e.target.value;
+                            setResumeData({ ...resumeData, header: newHeader });
+                          }}
+                          className="flex-1 px-3 py-2 border rounded-md"
+                          placeholder="信息内容"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newHeader = resumeData.header.filter((_, i) => i !== index);
+                          setResumeData({ ...resumeData, header: newHeader });
+                        }}
+                        className="ml-2 text-red-500 hover:text-red-600"
+                      >
+                        删除
+                      </button>
+                    </div>
+                  ))}
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setResumeData({ ...resumeData, header: [...resumeData.header, { label: '新信息', value: '' }] })}
+                  className="text-blue-500 hover:text-blue-600 mt-2"
+                >
+                  添加信息栏
+                </button>
               </div>
+            </div>
+          </section>
 
-              {/* 头像上传 */}
-              <div className="ml-8">
-                <div className="relative w-32 h-40">
-                  {resumeData.header.avatar ? (
-                    <div className="group relative w-full h-full overflow-hidden border-4 border-white shadow-lg">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={resumeData.header.avatar}
-                        alt="头像"
-                        className="w-full h-full object-cover"
-                      />
-                      {/* 删除按钮 */}
-                      <div 
-                        className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
-                        onClick={handleDeleteAvatar}
+          {/* 头像上传 */}
+          <section>
+            <div className="flex justify-between items-start mb-6">
+              <div className="flex-1">
+                <h2 className="text-xl font-semibold mb-4">头像</h2>
+                <div className="ml-8">
+                  <div className="flex flex-col items-center">
+                    <div className="relative w-32 h-40">
+                      {resumeData.header.find(item => item.label === '头像' || item.label.toLowerCase() === 'avatar')?.value ? (
+                        <div className="group relative w-full h-full overflow-hidden border-4 border-white shadow-lg">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={resumeData.header.find(item => item.label === '头像' || item.label.toLowerCase() === 'avatar')?.value}
+                            alt="头像"
+                            className="w-full h-full object-cover"
+                          />
+                          {/* 删除按钮 */}
+                          <div 
+                            className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                            onClick={handleDeleteAvatar}
+                          >
+                            <svg
+                              className="w-8 h-8 text-white"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center border-4 border-white shadow-lg">
+                          <svg
+                            className="w-16 h-16 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                            />
+                          </svg>
+                        </div>
+                      )}
+                      <label
+                        htmlFor="avatar-upload"
+                        className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full cursor-pointer shadow-lg hover:bg-blue-600 transition-colors duration-200"
                       >
                         <svg
-                          className="w-8 h-8 text-white"
+                          className="w-5 h-5"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -429,63 +389,29 @@ export default function EditPage() {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
                           />
                         </svg>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="w-full h-full bg-gray-200 flex items-center justify-center border-4 border-white shadow-lg">
-                      <svg
-                        className="w-16 h-16 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
-                    </div>
-                  )}
-                  <label
-                    htmlFor="avatar-upload"
-                    className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full cursor-pointer shadow-lg hover:bg-blue-600 transition-colors duration-200"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                      </label>
+                      <input
+                        id="avatar-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarChange}
+                        className="hidden"
                       />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                    </svg>
-                  </label>
-                  <input
-                    id="avatar-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                    className="hidden"
-                  />
+                    </div>
+                    <p className="text-sm text-gray-500 text-center mt-2">
+                      {resumeData.header.find(item => item.label === '头像' || item.label.toLowerCase() === 'avatar')?.value ? '鼠标悬停可删除头像' : '点击图标上传头像'}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm text-gray-500 text-center mt-2">
-                  {resumeData.header.avatar ? '鼠标悬停可删除头像' : '点击图标上传头像'}
-                </p>
               </div>
             </div>
           </section>

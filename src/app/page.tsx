@@ -12,19 +12,7 @@ import Footer from '@/components/Footer';
 import ExportButtons from '@/components/ExportButtons';
 
 interface ResumeData {
-  header: {
-    name: string;
-    gender: string;
-    age: string;
-    nativePlace: string;
-    phone: string;
-    email: string;
-    location: string;
-    experience: string;
-    jobIntention: string;
-    salary: string;
-    avatar?: string;
-  };
+  header: Array<{ label: string; value: string }>;
   about: string;
   advantages: string[];
   experience: Array<{
@@ -54,20 +42,32 @@ interface ResumeData {
   }>;
 }
 
+const infoIcons: Record<string, JSX.Element> = {
+  '性别': <svg className="w-5 h-5 text-blue-400 mr-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>,
+  '年龄': <svg className="w-5 h-5 text-green-400 mr-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" /></svg>,
+  '籍贯': <svg className="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" /></svg>,
+  '电话': <svg className="w-5 h-5 text-purple-400 mr-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>,
+  '邮箱': <svg className="w-5 h-5 text-pink-400 mr-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
+  '地址': <svg className="w-5 h-5 text-orange-400 mr-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" /></svg>,
+  '工作经验': <svg className="w-5 h-5 text-indigo-400 mr-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><rect width="20" height="12" x="2" y="7" rx="2" /><path strokeLinecap="round" strokeLinejoin="round" d="M16 3v4M8 3v4" /></svg>,
+  '求职意向': <svg className="w-5 h-5 text-teal-400 mr-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>,
+  '期望薪资': <svg className="w-5 h-5 text-red-400 mr-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm0 0V4m0 8v8" /></svg>,
+};
+const defaultIcon = <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3" /></svg>;
+
 const defaultResumeData: ResumeData = {
-  header: {
-    name: '李鑫华',
-    gender: '男',
-    age: '26岁',
-    nativePlace: '盐城',
-    phone: '17312308221',
-    email: '1750209521@qq.com',
-    location: '盐城',
-    experience: '4年工作经验',
-    jobIntention: 'Java',
-    salary: '15-20K',
-    avatar: '',
-  },
+  header: [
+    { label: '姓名', value: '李鑫华' },
+    { label: '性别', value: '男' },
+    { label: '年龄', value: '26岁' },
+    { label: '籍贯', value: '盐城' },
+    { label: '电话', value: '17312308221' },
+    { label: '邮箱', value: '1750209521@qq.com' },
+    { label: '地址', value: '盐城' },
+    { label: '工作经验', value: '4年工作经验' },
+    { label: '求职意向', value: 'Java' },
+    { label: '期望薪资', value: '15-20K' },
+  ],
   about: '',
   advantages: [
     '熟练掌握Java基础（集合、多线程、JVM内存模型），精通Spring全家桶（Spring/Spring MVC/SpringBoot）、Mybatis等主流框架。',
@@ -167,7 +167,22 @@ export default function Home() {
   useEffect(() => {
     const savedData = localStorage.getItem('resumeData');
     if (savedData) {
-      setResumeData(JSON.parse(savedData));
+      const parsed = JSON.parse(savedData);
+      if (!Array.isArray(parsed.header)) {
+        parsed.header = [
+          { label: '姓名', value: parsed.header.name || '' },
+          { label: '性别', value: parsed.header.gender || '' },
+          { label: '年龄', value: parsed.header.age || '' },
+          { label: '籍贯', value: parsed.header.nativePlace || '' },
+          { label: '电话', value: parsed.header.phone || '' },
+          { label: '邮箱', value: parsed.header.email || '' },
+          { label: '地址', value: parsed.header.location || '' },
+          { label: '工作经验', value: parsed.header.experience || '' },
+          { label: '求职意向', value: parsed.header.jobIntention || '' },
+          { label: '期望薪资', value: parsed.header.salary || '' },
+        ];
+      }
+      setResumeData(parsed);
     }
   }, []);
 
@@ -180,19 +195,20 @@ export default function Home() {
     <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <div className="max-w-[210mm] mx-auto px-4 py-8">
         <div id="resume-content" className="bg-white rounded shadow-sm p-[15mm] mb-8 min-h-[297mm] page-section">
-          <Header
-            name={resumeData.header.name}
-            gender={resumeData.header.gender}
-            age={resumeData.header.age}
-            nativePlace={resumeData.header.nativePlace}
-            phone={resumeData.header.phone}
-            email={resumeData.header.email}
-            location={resumeData.header.location}
-            experience={resumeData.header.experience}
-            jobIntention={resumeData.header.jobIntention}
-            salary={resumeData.header.salary}
-            avatar={resumeData.header.avatar}
-            />
+          <Header header={resumeData.header} />
+          {/* 基本信息 Section */}
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">基本信息</h2>
+            <div className="flex flex-col gap-2 text-gray-700 text-base max-w-xl">
+              {resumeData.header.filter(item => item.label !== '姓名' && item.label.toLowerCase() !== 'name' && item.label !== '头像' && item.label.toLowerCase() !== 'avatar').map((item, idx) => (
+                <div key={idx} className="flex items-center">
+                  {infoIcons[item.label] || defaultIcon}
+                  <span className="w-28 inline-block">{item.label}：</span>
+                  <span>{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
           <div className="space-y-6">
             <About advantages={resumeData.advantages} />
             <Experience items={resumeData.experience} />
